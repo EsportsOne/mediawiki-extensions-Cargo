@@ -216,7 +216,50 @@ class CargoStore {
 					}
 				}
 			}
-			if ( $fieldType == 'Date' || $fieldType == 'Datetime' ) {
+			if ( $fieldType == 'Date') {
+			    if ( $curValue == '' ) {
+			        continue;
+                }
+                $delim = null;
+                $pos = strpos($curValue, ' ');
+                if ($pos == false) {
+                    $pos = strpos($curValue, '/');
+                    if ($pos == false) {
+                        $pos = strpos($curValue, '-');
+                        if ($pos == false) {
+                            error_log("Cargo parse date: Cannot understand ". $curValue);
+                            continue;
+                        } else {
+                            $delim = '-';
+                        }
+                    } else {
+                        $delim = '/';
+                    }
+                } else {
+                    $delim = ' ';
+                }
+                $num_delim = substr_count( $curValue, $delim );
+                if ($num_delim == 0) {
+                    // convert year to legitimate date by adding dummy month and day value:
+                    $curValue = "$curValue-01-01";
+                    $precision = self::YEAR_ONLY;
+
+                } elseif ($num_delim == 1) {
+                    // convert month/year to legitimate date by adding dummy day value:
+                    $parts = explode($delim, $curValue);
+                    $curValue = end($parts) . '-' . current($parts) . '-1';
+                    $precision = self::MONTH_ONLY;
+                } else {
+                    $precision = self::DATE_ONLY;
+                }
+
+                // date should now be parseable by strtotime, so we can process it:
+
+                $seconds = strtotime($curValue);
+                $tableFieldValues[$fieldName] = date( 'Y-m-d', $seconds );
+                $tableFieldValues[$fieldName . '__precision'] = $precision;
+
+            } elseif ( $fieldType == 'Datetime' ) {
 				$precision = null;
 				if ( $curValue == '' ) {
 					continue;
@@ -240,7 +283,8 @@ class CargoStore {
 					// dashes, and if there's exactly one
 					// altogether, we'll guess that it's a
 					// month only.
-					$numSpecialChars = substr_count( $curValue, ' ' ) +
+
+                    $numSpecialChars = substr_count( $curValue, ' ' ) +
 						substr_count( $curValue, '/' ) + substr_count( $curValue, '-' );
 					if ( $numSpecialChars == 1 ) {
 						// No need to add anything -
