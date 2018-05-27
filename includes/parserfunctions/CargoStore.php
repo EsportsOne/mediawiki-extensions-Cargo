@@ -247,8 +247,15 @@ class CargoStore {
                 } elseif ($num_delim == 1) {
                     // convert month/year to legitimate date by adding dummy day value:
                     $parts = explode($delim, $curValue);
-                    $curValue = end($parts) . '-' . current($parts) . '-1';
-                    $precision = self::MONTH_ONLY;
+                    if (intval(current($parts)) == 0) {
+                        // special case used by Page Forms-- a 0/2018 means we just have the year. So set just year precision...
+                        $curValue = end($parts) . '-01-01';
+                        $precision = self::YEAR_ONLY;
+                    } else {
+                        // we have month and year...
+                        $curValue = end($parts) . '-' . current($parts) . '-1';
+                        $precision = self::MONTH_ONLY;
+                    }
                 } else {
                     $precision = self::DATE_ONLY;
                 }
