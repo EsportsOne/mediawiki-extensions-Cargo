@@ -221,16 +221,13 @@ class CargoStore {
 			    if ( $curValue == '' ) {
 			        continue;
                 }
-                $delim = null;
+                $delim = false;
                 $pos = strpos($curValue, ' ');
                 if ($pos == false) {
                     $pos = strpos($curValue, '/');
                     if ($pos == false) {
                         $pos = strpos($curValue, '-');
-                        if ($pos == false) {
-                            error_log("Cargo parse date: Cannot understand ". $curValue);
-                            continue;
-                        } else {
+                        if ($pos != false) {
                             $delim = '-';
                         }
                     } else {
@@ -239,12 +236,12 @@ class CargoStore {
                 } else {
                     $delim = ' ';
                 }
-                $num_delim = substr_count( $curValue, $delim );
-                if ($num_delim == 0) {
+                if ($delim != false)
+                    $num_delim = substr_count( $curValue, $delim );
+                if ($delim == false) {
                     // convert year to legitimate date by adding dummy month and day value:
                     $curValue = "$curValue-01-01";
                     $precision = self::YEAR_ONLY;
-
                 } elseif ($num_delim == 1) {
                     // convert month/year to legitimate date by adding dummy day value:
                     $parts = explode($delim, $curValue);
