@@ -185,6 +185,7 @@ class CargoStore {
 		// - remove invalid values, if any
 		// - put dates and numbers into correct format
 		foreach ( $tableSchema->mFieldDescriptions as $fieldName => $fieldDescription ) {
+
 			// If it's null or not set, skip this value.
 			if ( !array_key_exists( $fieldName, $tableFieldValues ) ) {
 				continue;
@@ -247,13 +248,14 @@ class CargoStore {
                 } elseif ($num_delim == 1) {
                     // convert month/year to legitimate date by adding dummy day value:
                     $parts = explode($delim, $curValue);
-                    if (intval(current($parts)) == 0) {
+                    $first = reset($parts);
+                    if (intval($first) == 0) {
                         // special case used by Page Forms-- a 0/2018 means we just have the year. So set just year precision...
                         $curValue = end($parts) . '-01-01';
                         $precision = self::YEAR_ONLY;
                     } else {
                         // we have month and year...
-                        $curValue = end($parts) . '-' . current($parts) . '-1';
+                        $curValue = end($parts) . '-' . $first . '-1';
                         $precision = self::MONTH_ONLY;
                     }
                 } else {
